@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐾 治愈系小动物收容所</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 50%, #fd79a8 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 飘浮的爱心背景 */
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .heart {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 20px;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            animation: bounce 2s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .intro-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px auto 40px;
+            max-width: 700px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .intro-card h2 {
+            color: #e17055;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .intro-card p {
+            color: #636e72;
+            line-height: 1.8;
+            font-size: 1.1em;
+        }
+
+        .paw-print {
+            font-size: 2em;
+            margin: 10px 0;
+        }
+
+        .animals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .animal-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .animal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .animal-card.adopted {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .animal-card.adopted::after {
+            content: "已领养 💕";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 107, 107, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+            z-index: 10;
+        }
+
+        .animal-emoji {
+            font-size: 5em;
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            transition: transform 0.3s;
+        }
+
+        .animal-card:hover .animal-emoji {
+            transform: scale(1.1);
+        }
+
+        .animal-info {
+            padding: 20px;
+        }
+
+        .animal-info h3 {
+            color: #2d3436;
+            margin-bottom: 8px;
+            font-size: 1.3em;
+        }
+
+        .animal-info .tag {
+            display: inline-block;
+            background: #ffeaa7;
+            color: #d63031;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .animal-info p {
+            color: #636e72;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .adopt-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .adopt-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(232, 67, 147, 0.4);
+        }
+
+        .adopt-btn:active {
+            transform: scale(0.98);
+        }
+
+        .adopt-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .adopt-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* 领养弹窗 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            animation: modalPop 0.5s ease;
+            position: relative;
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal h2 {
+            color: #e84393;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .modal .big-emoji {
+            font-size: 4em;
+            margin: 20px 0;
+            animation: wiggle 1s ease infinite;
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        .modal p {
+            color: #636e72;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ffeaa7;
+            border-radius: 15px;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .modal-input:focus {
+            border-color: #fd79a8;
+        }
+
+        .modal-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+
+        .modal-btn.confirm {
+            background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+            color: white;
+        }
+
+        .modal-btn.cancel {
+            background: #dfe6e9;
+            color: #636e72;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 证书样式 */
+        .certificate {
+            display: none;
+            background: linear-gradient(135deg, #fff 0%, #fff9f0 100%);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 40px auto;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .certificate::before {
+            content: '🏆';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            opacity: 0.3;
+        }
+
+        .certificate h2 {
+            color: #e84393;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .certificate-content {
+            font-size: 1.2em;
+            color: #2d3436;
+            line-height: 2;
+            margin: 30px 0;
+        }
+
+        .certificate-content .highlight {
+            color: #e84393;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        .certificate-date {
+            color: #636e72;
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        .certificate-seal {
+            font-size: 3em;
+            margin-top: 20px;
+            animation: pulse 2s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .reset-btn {
+            display: block;
+            margin: 30px auto;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            color: #d63031;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(253, 203, 110, 0.4);
+        }
+
+        /*  confetti  */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            animation: confetti-fall 3s ease-out forwards;
+            z-index: 9999;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8em; }
+            .animal-emoji { font-size: 3.5em; }
+            .modal { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 飘浮爱心背景 -->
+    <div class="hearts-container" id="heartsContainer"></div>
+
+    <div class="container">
+        <header>
+            <h1>🐾 治愈系小动物收容所 🐾</h1>
+            <p>每一只毛茸茸的小可爱，都在等待一个温暖的家<br>今天，你想带谁回家呢？</p>
+        </header>
+
+        <div class="intro-card">
+            <div class="paw-print">🐾 🐾 🐾</div>
+            <h2>欢迎来到收容所</h2>
+            <p>这里有6只性格各异的小可爱<br>它们不会惹你生气，只会用软乎乎的爱治愈你<br>点击"带我回家"，给它们一个温暖的拥抱吧 💕</p>
+            <div class="paw-print">🐾 🐾 🐾</div>
+        </div>
+
+        <div class="animals-grid" id="animalsGrid"></div>
+
+        <!-- 领养证书 -->
+        <div class="certificate" id="certificate">
+            <h2>🏆 爱心领养证书 🏆</h2>
+            <div class="certificate-content">
+                <p>特此证明</p>
+                <p class="highlight" id="certOwner">爱心铲屎官</p>
+                <p>于 <span id="certDate"></span></p>
+                <p>在治愈系小动物收容所</p>
+                <p>成功领养了一只超可爱的毛孩子</p>
+                <p class="highlight" id="certAnimal"></p>
+                <p>愿你们互相陪伴，温暖每一天 💕</p>
+            </div>
+            <div class="certificate-date" id="certTimestamp"></div>
+            <div class="certificate-seal">🐾 ❤️ 🐾</div>
+        </div>
+
+        <button class="reset-btn" id="resetBtn" style="display:none;" onclick="resetAll()">🔄 重新选择小可爱</button>
+    </div>
+
+    <!-- 领养弹窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="big-emoji" id="modalEmoji">🐱</div>
+            <h2 id="modalTitle">确定要带我回家吗？</h2>
+            <p id="modalDesc">我会很乖的，每天都给你毛茸茸的爱！</p>
+            <input type="text" class="modal-input" id="ownerName" placeholder="请输入你的名字（或昵称）" maxlength="20">
+            <div>
+                <button class="modal-btn cancel" onclick="closeModal()">再想想</button>
+                <button class="modal-btn confirm" onclick="confirmAdopt()">💕 确定领养</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 小动物数据
+        const animals = [
+            {
+                id: 1,
+                emoji: '🐱',
+                name: '糯米',
+                type: '橘猫',
+                desc: '一只圆滚滚的橘猫，最喜欢在阳光下打滚。虽然有点懒，但只要你摸摸它的头，就会发出呼噜呼噜的声音，超级治愈！',
+                adoptText: '我会每天蹭你、陪你，做你最暖的小太阳！'
+            },
+            {
+                id: 2,
+                emoji: '🐶',
+                name: '豆豆',
+                type: '柯基',
+                desc: '短腿小柯基，走路屁股一扭一扭的。性格开朗，看到你就摇尾巴，永远充满活力，是快乐小狗本狗！',
+                adoptText: '我会每天对你摇尾巴，把快乐传染给你！'
+            },
+            {
+                id: 3,
+                emoji: '🐱',
+                name: '雪球',
+                type: '布偶猫',
+                desc: '像棉花糖一样软乎乎的布偶猫，眼睛像蓝宝石一样漂亮。性格温柔，喜欢安静地趴在你腿上。',
+                adoptText: '我会安静地陪着你，做你贴心的小棉袄~'
+            },
+            {
+                id: 4,
+                emoji: '🐶',
+                name: '布丁',
+                type: '金毛',
+                desc: '温柔大金毛，笑容超级治愈。虽然体型大，但内心是个宝宝，最喜欢被摸摸头和抱抱。',
+                adoptText: '我会给你最温暖的抱抱，赶走所有不开心！'
+            },
+            {
+                id: 5,
+                emoji: '🐱',
+                name: '芝麻',
+                type: '暹罗猫',
+                desc: '话痨小暹罗，喜欢跟在人后面喵喵叫。性格粘人，如果你不理它，它会用爪子轻轻拍你求关注。',
+                adoptText: '我会一直陪着你，不让你的消息没人回！'
+            },
+            {
+                id: 6,
+                emoji: '🐶',
+                name: '奶茶',
+                type: '柴犬',
+                desc: '表情包本包的柴犬，有时候贱兮兮的，但关键时刻超靠谱。喜欢散步，更喜欢和你一起窝在沙发里。',
+                adoptText: '我会陪你散步、陪你宅家，做你最忠实的伙伴！'
+            }
+        ];
+
+        let currentAnimal = null;
+        let adoptedCount = 0;
+
+        // 初始化页面
+        function init() {
+            createHearts();
+            renderAnimals();
+        }
+
+        // 创建飘浮爱心
+        function createHearts() {
+            const container = document.getElementById('heartsContainer');
+            for (let i = 0; i < 15; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.innerHTML = '💕';
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.animationDelay = Math.random() * 15 + 's';
+                heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                container.appendChild(heart);
+            }
+        }
+
+        // 渲染小动物卡片
+        function renderAnimals() {
+            const grid = document.getElementById('animalsGrid');
+            grid.innerHTML = animals.map(animal => `
+                <div class="animal-card" id="card-${animal.id}" onclick="openModal(${animal.id})">
+                    <div class="animal-emoji">${animal.emoji}</div>
+                    <div class="animal-info">
+                        <h3>${animal.name}</h3>
+                        <span class="tag">${animal.type}</span>
+                        <p>${animal.desc}</p>
+                        <button class="adopt-btn" onclick="event.stopPropagation(); openModal(${animal.id})">
+                            💕 带我回家
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 打开领养弹窗
+        function openModal(id) {
+            const animal = animals.find(a => a.id === id);
+            if (!animal) return;
+
+            currentAnimal = animal;
+            document.getElementById('modalEmoji').textContent = animal.emoji;
+            document.getElementById('modalTitle').textContent = `确定要领养${animal.name}吗？`;
+            document.getElementById('modalDesc').textContent = animal.adoptText;
+            document.getElementById('ownerName').value = '';
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            currentAnimal = null;
+        }
+
+        // 确认领养
+        function confirmAdopt() {
+            const ownerName = document.getElementById('ownerName').value.trim();
+            if (!ownerName) {
+                alert('请输入你的名字哦~');
+                return;
+            }
+
+            if (!currentAnimal) return;
+
+            // 标记为已领养
+            const card = document.getElementById(`card-${currentAnimal.id}`);
+            card.classList.add('adopted');
+
+            // 创建彩带效果
+            createConfetti();
+
+            // 显示证书
+            showCertificate(ownerName, currentAnimal);
+
+            adoptedCount++;
+
+            // 如果全部领养完，显示重置按钮
+            if (adoptedCount >= animals.length) {
+                setTimeout(() => {
+                    document.getElementById('resetBtn').style.display = 'block';
+                }, 1000);
+            }
+
+            closeModal();
+        }
+
+        // 显示证书
+        function showCertificate(ownerName, animal) {
+            const cert = document.getElementById('certificate');
+            const now = new Date();
+
+            document.getElementById('certOwner').textContent = ownerName;
+            document.getElementById('certAnimal').textContent = `${animal.emoji} ${animal.name}（${animal.type}）`;
+            document.getElementById('certDate').textContent = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+            document.getElementById('certTimestamp').textContent = `证书编号：LOVE-${Date.now()}`;
+
+            cert.style.display = 'block';
+            cert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // 创建彩带
+        function createConfetti() {
+            const colors = ['#fd79a8', '#ffeaa7', '#fab1a0', '#55efc4', '#74b9ff', '#a29bfe'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 30);
+            }
+        }
+
+        // 重置
+        function resetAll() {
+            adoptedCount = 0;
+            document.querySelectorAll('.animal-card').forEach(card => {
+                card.classList.remove('adopted');
+            });
+            document.getElementById('certificate').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 点击遮罩关闭弹窗
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // 回车确认
+        document.getElementById('ownerName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') confirmAdopt();
+        });
+
+        // 初始化
+        init();
+    </script>
+</body>
+</html>
